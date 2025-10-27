@@ -1,221 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dynamic Train Schedule Viewer</title>
-
-<style>
-  body {
-    font-family: "Poppins", sans-serif;
-    background: linear-gradient(135deg, #0061ff, #60efff);
-    margin: 0;
-    padding: 0;
-    color: #222;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-  }
-
-  h1 {
-    color: #fff;
-    margin-top: 30px;
-    font-size: 2rem;
-  }
-
-  .search-box {
-    margin-top: 20px;
-    display: flex;
-    gap: 10px;
-  }
-
-  input[type="text"] {
-    padding: 10px 15px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-    font-size: 1rem;
-    width: 220px;
-  }
-
-  button {
-    background-color: #fff;
-    border: none;
-    color: #0078ff;
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-
-  button:hover {
-    background-color: #0078ff;
-    color: #fff;
-  }
-
-  .train-card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 20px;
-    width: 90%;
-    max-width: 800px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-    margin-top: 20px;
-  }
-
-  .train-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 10px;
-  }
-
-  .train-header h2 {
-    margin: 0;
-    color: #0078ff;
-  }
-
-  .train-details {
-    margin-top: 10px;
-    font-size: 0.95rem;
-  }
-
-  .train-details strong {
-    color: #444;
-  }
-
-  .schedule {
-    margin-top: 20px;
-    border-collapse: collapse;
-    width: 100%;
-  }
-
-  .schedule th {
-    background: #0078ff;
-    color: white;
-    padding: 10px;
-    text-align: left;
-  }
-
-  .schedule td {
-    padding: 8px 10px;
-    border-bottom: 1px solid #eee;
-  }
-
-  .station {
-    font-weight: bold;
-  }
-
-  @media (max-width: 600px) {
-    .train-card {
-      padding: 15px;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Train Search</title>
+  <style>
+    * {
+      box-sizing: border-box;
     }
-    .train-header h2 {
-      font-size: 1.2rem;
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f6f8;
+      color: #333;
     }
-    .schedule th, .schedule td {
-      font-size: 0.8rem;
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-  }
-</style>
+    h2 {
+      margin-bottom: 20px;
+      color: #0d47a1;
+      text-align: center;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    label {
+      font-weight: bold;
+    }
+    input[type="text"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      padding: 12px;
+      font-size: 16px;
+      background-color: #0d47a1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background-color: #1565c0;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+      background-color: #fafafa;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+    }
+    th {
+      background-color: #e3f2fd;
+      font-weight: bold;
+      border-bottom: 1px solid #ccc;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    tr:hover {
+      background-color: #e3f2fd;
+      cursor: pointer;
+    }
+    #dat_container {
+      margin-top: 30px;
+    }
+  </style>
 </head>
-
 <body>
-  <h1>🚆 Train Schedule Viewer</h1>
-
-  <div class="search-box">
-    <input type="text" id="trainInput" placeholder="Enter Train Number (e.g. 12027)" />
-    <button onclick="searchTrain()">Search</button>
+  <div class="container">
+    <h2>Search Train Timing</h2>
+    <form id="trainForm">
+      <label for="trainNumber">Train Number:</label>
+      <input type="text" id="trainNumber" name="trainNumber" placeholder="Enter train number (e.g. 2265)" required />
+      <div style="text-align: center; ">
+        <button type="submit" style="width:120px">Search</button>
+      <a href="pnr.html" style="width:120px;"><button>PNR</button></a>
+      </div>
+    </form>
+    <div id="dat_container"></div>
   </div>
 
-  <div id="train-container"></div>
+  <script>
+    document.getElementById('trainForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
 
-<script>
-  async function searchTrain() {
-    const trainNum = document.getElementById("trainInput").value.trim();
-    const container = document.getElementById("train-container");
-    container.innerHTML = "";
+      const trainNumber = document.getElementById('trainNumber').value.trim();
+      if (!trainNumber) return;
 
-    if (!trainNum) {
-      container.innerHTML = "<p style='color:white;'>⚠️ Please enter a train number.</p>";
-      return;
-    }
+      const url = `https://indian-railway-irctc.p.rapidapi.com/api/trains-search/v1/train/${trainNumber}?isH5=true&client=web`;
 
-    container.innerHTML = "<p style='color:white;'>⏳ Fetching train data...</p>";
+      const options = {
+        method: 'GET',
+        headers: {
+          'x-rapidapi-key': 'daa17d58ccmshd9376db8e118fd6p18878bjsn88cdd4f4cd7a',
+          'x-rapidapi-host': 'indian-railway-irctc.p.rapidapi.com'
+        }
+      };
 
-    try {
-      // 🔹 Replace with your actual API endpoint
-      const apiUrl = "https://your-api-endpoint.com/getTrainData"; 
+      try {
+        const response = await fetch(url, options);
+        if (!response.ok) throw new Error(`Error: ${response.status}`);
 
-      // 🔹 Example: sending train number in POST body
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ queryText: trainNum })
-      });
-
-      if (!response.ok) throw new Error("Failed to fetch train details");
-
-      const data = await response.json();
-      container.innerHTML = "";
-
-      if (!data.body || !data.body.length || !data.body[0].trains.length) {
-        container.innerHTML = `<p style='color:white;'>🚫 No data found for train number ${trainNum}</p>`;
-        return;
-      }
-
-      // ✅ Display all trains
-      data.body[0].trains.forEach(train => {
-        const card = document.createElement("div");
-        card.className = "train-card";
-
-        card.innerHTML = `
-          <div class="train-header">
-            <h2>${train.trainName} (${train.trainNumber})</h2>
-            <div><strong>${train.origin}</strong> ➜ <strong>${train.destination}</strong></div>
-          </div>
-
-          <div class="train-details">
-            <p><strong>Classes:</strong> ${train.journeyClasses.join(", ")}</p>
-            <p><strong>Running Days:</strong> ${train.runningOn.replaceAll("Y", "✅").replaceAll("N", "❌")}</p>
-          </div>
-
-          <table class="schedule">
+        const result = await response.json();
+        const container = document.getElementById("dat_container");
+        container.innerHTML = "";
+        if (result && result.body && result.body.length > 0 && result.body[0].trains.length > 0) {
+          const trains = result.body[0].trains;
+          let html = `<h3 style="margin-bottom: 15px; color:#0d47a1;">Trains matching "${trainNumber}"</h3>`;
+          html += `<table>
             <thead>
               <tr>
-                <th>#</th>
-                <th>Station Code</th>
-                <th>Station Name</th>
-                <th>Arr</th>
-                <th>Dep</th>
-                <th>Dist (km)</th>
-                <th>Halt</th>
+                <th>Train Number</th>
+                <th>Train Name</th>
+                <th>Origin</th>
+                <th>Destination</th>
+                <th>Station From</th>
               </tr>
             </thead>
-            <tbody>
-              ${train.schedule.map(stop => `
-                <tr>
-                  <td>${stop.stnSerialNumber}</td>
-                  <td class="station">${stop.stationCode}</td>
-                  <td>${stop.stationName}</td>
-                  <td>${stop.arrivalTime}</td>
-                  <td>${stop.departureTime}</td>
-                  <td>${stop.distance}</td>
-                  <td>${stop.haltTime}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-        container.appendChild(card);
-      });
-
-    } catch (error) {
-      container.innerHTML = `<p style="color:white;">❌ Error: ${error.message}</p>`;
-    }
-  }
-</script>
+            <tbody>`;
+          trains.forEach(train => {
+            html += `<tr onclick="window.location.href='index2.html?trainNumber=${train.trainNumber}'">
+              <td>${train.trainNumber || '-'}</td>
+              <td>${train.trainName || '-'}</td>
+              <td>${train.origin || '-'}</td>
+              <td>${train.destination || '-'}</td>
+              <td>${train.stationFrom || '-'}</td>
+            </tr>`;
+          });
+          html += '</tbody></table>';
+          container.innerHTML = html;
+        } else {
+          container.innerHTML = '<p style="color: #e53935;">No trains found for this train number.</p>';
+        }
+      } catch (error) {
+        console.error(error);
+        document.getElementById("dat_container").innerHTML = '<p style="color: #e53935;">Failed to fetch train data. Please try again.</p>';
+      }
+    });
+  </script>
 </body>
 </html>
